@@ -40,9 +40,12 @@ def textToQuery(retry_limit=3, delay_inicial=1):
             Siempre debes apuntar a la tabla 'csv_table'.
             Para la columna, a menos que sea indicado, **evita generar signos, respeta el nombre tal cuál es**.
             Tener en cuenta los siguientes valores como nombres de columnas a las que debes apuntar: "Año - mes","Cód. Cliente","Razón Social","Fecha Emisión Créd.","Tipo Comprob. Créd.","Comprobante Créd.","Tipo Comprob. Déb.","Comprobante Déb.","Fecha Emisión Déb.","Fecha Vto. Créd.","Fecha Vto. Déb.","Importe Créd.","Importe Aplicado","Saldo Créd.","Dias".
-            Utiliza 'Like' para estructurar las Querys.
+            Para cuando la búsqueda sea un rango entre valores, que identifiques como números o fechas, utiliza operadores lógicos.
+            Para cuando la búsqueda sea por un valor que reconozcas semánticamente como un sustantivo propio, utiliza 'Like' para estructurar su apartado en la Query.
+            El campo "Año - mes" corresponde a una fecha en formato texto con estructura YYYY-MM-DD, respeta eso.
             Recuerda, que el nombre de la columna que detectes, debe estar entre comillas. Ejemplo: "Año - mes".
             Cuando el usuario pregunte por un Cliente, a menos que exprese "Codigo de Cliente" o similar, hace referencia a "Razón Social".
+            Considera el uso de LOWER(), para cuando identifiques un sustantivo propio en la Query.
             Pregunta: {input}
             """
             sql_prompt = PromptTemplate(
