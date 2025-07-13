@@ -12,7 +12,6 @@ def initialize():
 
     #df = pd.read_csv(csv_path, sep="\s+")}
     df = pd.read_excel("C:/Users/MarsuDIOS666/Desktop/TextToSQL/XLSX.xlsx")
-    print(df)
 
     engine = create_engine(f"sqlite:///{sqlite_path}")
     df.to_sql("csv_table", con=engine, if_exists="replace", index=False)

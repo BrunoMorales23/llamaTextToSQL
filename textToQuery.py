@@ -6,6 +6,7 @@ from langchain_ollama.llms import OllamaLLM
 from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_experimental.sql import SQLDatabaseChain
 from langchain.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from exceptionHandling import *
 
 load_dotenv()
@@ -16,15 +17,13 @@ result = None
 
 def textToQuery(retry_limit=3, delay_inicial=1):
     global exceptionCoreValue, query, newQuery, result
+    newQuery = None
     retry_value = 0
-    input("...")
     while retry_value < retry_limit:
-        input("...")
         if exceptionCoreValue != None:
             newQuery = redefineQuery(result, exceptionCoreValue)
             print(newQuery)
         try:
-            input("...")
             # Crear instancia del modelo llama 3.2 (ajustá el nombre si usás otro)
             llm = OllamaLLM(model="gemma3n", temperature=0)
 
@@ -40,35 +39,50 @@ def textToQuery(retry_limit=3, delay_inicial=1):
             Responde SOLO con la consulta SQL sin ningún formato de código ni backticks.
             Siempre debes apuntar a la tabla 'csv_table'.
             Para la columna, a menos que sea indicado, **evita generar signos, respeta el nombre tal cuál es**.
+            Tener en cuenta los siguientes valores como nombres de columnas a las que debes apuntar: "Año - mes","Cód. Cliente","Razón Social","Fecha Emisión Créd.","Tipo Comprob. Créd.","Comprobante Créd.","Tipo Comprob. Déb.","Comprobante Déb.","Fecha Emisión Déb.","Fecha Vto. Créd.","Fecha Vto. Déb.","Importe Créd.","Importe Aplicado","Saldo Créd.","Dias".
+            Utiliza 'Like' para estructurar las Querys.
+            Recuerda, que el nombre de la columna que detectes, debe estar entre comillas. Ejemplo: "Año - mes".
+            Cuando el usuario pregunte por un Cliente, a menos que exprese "Codigo de Cliente" o similar, hace referencia a "Razón Social".
             Pregunta: {input}
-            SQLQuery:
             """
-
             sql_prompt = PromptTemplate(
                 input_variables=["input"],
                 template=sql_prompt_template
             )
 
             db_chain = SQLDatabaseChain.from_llm(llm, db, prompt=sql_prompt, verbose=True)
-            print(db.get_usable_table_names())
+            #print(db.get_usable_table_names())
 
-            # Crear chain SQL
-            #db_chain = SQLDatabaseChain.from_llm(llm, db, verbose=True)
-            #print(db_chain)
-
-            # Pregunta en lenguaje natural
             if newQuery == None:
-                query = "¿Cuántos clientes con Razón Social: Banco de la Ciudad de Buenos Aires hay?"
-                result = db_chain.run(query)
-                input("...")
-                print(result)
+                print("----------------------------------")
+                query = input("¿Cómo puedo ayudarte? ...  ")
+
+                sql_chain = sql_prompt | llm | StrOutputParser()
+                sql_query = sql_chain.invoke({"input": query})
+
+                print("SQL Generada:\n", sql_query)
+
+                result = db.run(sql_query)
+
+                #result = db_chain.run(query)
+                with open("output.txt", "w", encoding="utf-8") as f:
+                    f.write(result)
+                print("----------------------------------")
+                print("Resultado obtenido en ./output.txt")
+                break
             else:
-                result = db_chain.run(newQuery)
-                input("...")
-                print(result)
+                sql_chain = sql_prompt | llm | StrOutputParser()
+                sql_query = sql_chain.invoke({"input": newQuery})
+
+                result = db.run(sql_query)
+                with open("output.txt", "w", encoding="utf-8") as f:
+                    f.write(result)
+                print("----------------------------------")
+                print("Resultado obtenido en ./output.txt")
+                break
                 
         except Exception as e:
-            input("...")
+            input("Exception Cycle Initialized...")
             retry_value += 1
             logging.warning(f"Excepción capturada. {e}.")
             if retry_value == retry_limit:
