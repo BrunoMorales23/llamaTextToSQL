@@ -7,16 +7,16 @@ from dotenv import load_dotenv
 def initialize():
     load_dotenv()
 
-    csv_path = os.getenv("INPUTCSV")
+    xlsx_path = os.getenv("INPUTXLSX")
     sqlite_path = os.getenv("SQLPATH")
 
     #df = pd.read_csv(csv_path, sep="\s+")}
-    df = pd.read_excel("C:/Users/MarsuDIOS666/Desktop/TextToSQL/XLSX.xlsx")
+    df = pd.read_excel(xlsx_path)
 
     engine = create_engine(f"sqlite:///{sqlite_path}")
-    df.to_sql("csv_table", con=engine, if_exists="replace", index=False)
+    df.to_sql("xlsx_table", con=engine, if_exists="replace", index=False)
 
     print("CSV cargado a la base de datos correctamente.")
-    df = pd.read_sql("SELECT * FROM csv_table", con=engine)
+    df = pd.read_sql("SELECT * FROM xlsx_table", con=engine)
     print(df)
     return
